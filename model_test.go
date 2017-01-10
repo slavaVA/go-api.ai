@@ -22,7 +22,7 @@ package gapiai_test
  ***********************************************************************************************************************/
 
 import (
-	. "github.com/go-api.ai"
+	. "github.com/slavaVA/go-api.ai"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
