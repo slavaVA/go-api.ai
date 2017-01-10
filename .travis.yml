@@ -9,4 +9,4 @@ install:
   - cd $GOPATH/src/github.com/slavaVA/go-api.ai
   - glide install
 script:
-  - ginkgo
+  - go test -v
