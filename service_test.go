@@ -1,4 +1,5 @@
 package gapiai_test
+
 /***********************************************************************************************************************
  *
  * API.AI Go client-side libraries for API.AI
@@ -30,7 +31,6 @@ import (
 	"os"
 )
 
-
 var _ = Describe("Service", func() {
 	var server *ghttp.Server
 
@@ -43,15 +43,15 @@ var _ = Describe("Service", func() {
 		server.Close()
 	})
 	Describe("Text Query", func() {
-		testToken:="123456789"
+		testToken := "123456789"
 		var apiService *HttpApiService
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/v1/query", "v=20150910"),
 					ghttp.VerifyHeader(http.Header{
-						"Authorization": []string{"Bearer "+testToken},
-						"Content-Type": []string{"application/json; charset=utf-8"},
+						"Authorization": []string{"Bearer " + testToken},
+						"Content-Type":  []string{"application/json; charset=utf-8"},
 					}),
 					ghttp.RespondWith(http.StatusOK, `{
 						  "id": "5bb49696-549d-4655-bfb1-21e1dc806379",
@@ -91,14 +91,14 @@ var _ = Describe("Service", func() {
 						}`),
 				),
 			)
-			apiService= NewAPIService(server.URL()+"/v1/",testToken, CurrentAPIVersion,English)
+			apiService = NewAPIService(server.URL()+"/v1/", testToken, CurrentAPIVersion, English)
 			apiService.EnableLogger(os.Stdout)
 		})
 
 		It("Should do simple Text Request", func() {
-			sessionId:="111"
-			requestText:="RequestText"
-			response,err:=apiService.TextRequest(sessionId,requestText)
+			sessionId := "111"
+			requestText := "RequestText"
+			response, err := apiService.TextRequest(sessionId, requestText)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(response).ShouldNot(BeNil())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))

@@ -26,10 +26,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 )
 
 type (
@@ -41,18 +41,18 @@ type (
 	}
 )
 
-func NewAPIService(url string,accessToken string, version string, lang SupportedLang) *HttpApiService {
+func NewAPIService(url string, accessToken string, version string, lang SupportedLang) *HttpApiService {
 	svc := &HttpApiService{
 		logger:      nil,
 		accessToken: accessToken,
-		lang:lang,
+		lang:        lang,
 		queryURL:    fmt.Sprint(url, "query?v=", version),
 	}
 	return svc
 }
 
 func DefaultAPIService(accessToken string, lang SupportedLang) *HttpApiService {
-	return NewAPIService(apiAiURL,accessToken, CurrentAPIVersion,lang)
+	return NewAPIService(apiAiURL, accessToken, CurrentAPIVersion, lang)
 }
 
 func (service *HttpApiService) EnableLogger(w io.Writer) {
@@ -69,18 +69,17 @@ func (service *HttpApiService) debug(v ...interface{}) {
 	}
 }
 
-func (service *HttpApiService) TextRequest(sessionID string,text string) (*QueryResponse,error){
-	q:=Query{
-		Query:[]string{text},
-		SessionID:sessionID,
+func (service *HttpApiService) TextRequest(sessionID string, text string) (*QueryResponse, error) {
+	q := Query{
+		Query:     []string{text},
+		SessionID: sessionID,
 	}
 	return service.DoQuery(q)
 }
 
-
 func (service *HttpApiService) DoQuery(q Query) (*QueryResponse, error) {
 
-	q.Lang=string(service.lang)
+	q.Lang = string(service.lang)
 
 	jsonStr, err := json.Marshal(q)
 	if err != nil {
@@ -94,7 +93,7 @@ func (service *HttpApiService) DoQuery(q Query) (*QueryResponse, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+ service.accessToken)
+	req.Header.Set("Authorization", "Bearer "+service.accessToken)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	//TODO кешировать клиентов
 	client := &http.Client{}
@@ -104,14 +103,14 @@ func (service *HttpApiService) DoQuery(q Query) (*QueryResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.ContentLength<=0 {
+	if resp.ContentLength <= 0 {
 		return nil, errors.New("Content length is 0")
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	service.debug("API AI response Body:", string(body))
 
-	queryResponse:=&QueryResponse{}
+	queryResponse := &QueryResponse{}
 	err = queryResponse.Decode(body)
 	if err != nil {
 		return nil, errors.New("Error parse body response:" + err.Error() + " Body:" + string(body))

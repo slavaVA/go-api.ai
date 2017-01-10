@@ -1,4 +1,5 @@
 package gapiai_test
+
 /***********************************************************************************************************************
  *
  * API.AI Go client-side libraries for API.AI
@@ -67,8 +68,8 @@ var _ = Describe("Model", func() {
   "sessionId": "1"
 }
 `
-		response:=&QueryResponse{}
-		err:=response.Decode([]byte(resultStr))
+		response := &QueryResponse{}
+		err := response.Decode([]byte(resultStr))
 		Ω(err).ShouldNot(HaveOccurred())
 
 		Ω(response.SessionID).Should(Equal("1"))
