@@ -6,8 +6,7 @@ go:
 install:
   - mkdir -p $GOPATH/bin
   - curl https://glide.sh/get | sh
-  - go get -v ./...
-  - cd $GOPATH/src/github.com/go-api.ai
+  - cd $GOPATH/src/github.com/slavaVA/go-api.ai
   - glide install
 script:
   - ginkgo
