@@ -2,7 +2,7 @@ package gapiai_test
 
 /***********************************************************************************************************************
  *
- * API.AI Go client-side libraries for API.AI
+ * Go client-side library for API.AI
  * =================================================
  *
  * Copyright (C) 2017 by Slava Vasylyev
