@@ -55,9 +55,9 @@ type (
 	//if the user says, "Turn on the coffee machine", and follows this with “Turn it off”,
 	//it will result in different action than before, because of the new context.
 	DialogContext struct {
-		Name       string            `json:"name"`
-		Parameters map[string]string `json:"parameters"`
-		Lifespan   int               `json:"lifespan"`
+		Name       string                 `json:"name"`
+		Parameters map[string]interface{} `json:"parameters"`
+		Lifespan   int                    `json:"lifespan"`
 	}
 
 	//Event is a feature that allows you to invoke intents by an event name instead of a user query.
@@ -115,24 +115,24 @@ type (
 		Action           string                 `json:"action"`
 		ActionIncomplete bool                   `json:"actionIncomplete"`
 		Parameters       map[string]interface{} `json:"parameters"`
-		Contexts         []struct {
-			Name       string                 `json:"name"`
-			Parameters map[string]interface{} `json:"parameters"`
-			Lifespan   int                    `json:"lifespan"`
-		} `json:"contexts"`
-		Fulfillment struct {
-			Speech      string     `json:"speech"`
-			DisplayText string     `json:"displayText"`
-			Source      string     `json:"source"`
-			Data        string     `json:"data"`
-			Messages    []Messages `json:"messages"`
-		} `json:"fulfillment"`
-		Metadata struct {
-			IntentID                  string `json:"intentId"`
-			IntentName                string `json:"intentName"`
-			WebhookUsed               string `json:"webhookUsed"`
-			WebhookForSlotFillingUsed string `json:"webhookForSlotFillingUsed"`
-		} `json:"metadata"`
+		Contexts         []DialogContext        `json:"contexts"`
+		Fulfillment      Fulfillment            `json:"fulfillment"`
+		Metadata         Metadata               `json:"metadata"`
+	}
+
+	Fulfillment struct {
+		Speech      string     `json:"speech"`
+		DisplayText string     `json:"displayText"`
+		Source      string     `json:"source"`
+		Data        string     `json:"data"`
+		Messages    []Messages `json:"messages"`
+	}
+
+	Metadata struct {
+		IntentID                  string `json:"intentId"`
+		IntentName                string `json:"intentName"`
+		WebhookUsed               string `json:"webhookUsed"`
+		WebhookForSlotFillingUsed string `json:"webhookForSlotFillingUsed"`
 	}
 
 	//StatusObject is returned with every request and indicates if the request was successful.
