@@ -1,4 +1,4 @@
-package gapiai
+package gapiai_test
 
 /***********************************************************************************************************************
  *
@@ -22,30 +22,45 @@ package gapiai
  ***********************************************************************************************************************/
 
 import (
-	"io"
-	"log"
+	. "github.com/slavaVA/go-api.ai"
+
+	"bytes"
+	"encoding/binary"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
-type (
-	ApiConfig struct {
-		AccessToken string
-		Lang        SupportedLang
-	}
+var _ = Describe("Wavefile", func() {
+	It("Should write speech to file", func() {
+		soundData := make([]byte, 100)
+		r := bytes.NewReader(soundData)
+		dir, err := ioutil.TempDir("", "wavedir")
+		Ω(err).ShouldNot(HaveOccurred())
 
-	ApiService struct {
-		logger *log.Logger
-		Config *ApiConfig
-	}
-)
+		defer os.RemoveAll(dir)
 
-func (service *ApiService) EnableLogger(w io.Writer) {
-	service.logger = log.New(w,
-		"DEBUG: ",
-		log.Ldate|log.Ltime|log.Lshortfile)
-}
+		tmpfn := filepath.Join(dir, "test.wav")
 
-func (service *ApiService) debug(v ...interface{}) {
-	if service.logger != nil {
-		service.logger.Println(v)
-	}
-}
+		sh, err := NewSpeeshToWaveFileHandler(tmpfn, r)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		sh(r, r.Size())
+
+		bf, err := ioutil.ReadFile(tmpfn)
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(bf).Should(HaveLen(148))
+
+		Ω(string(bf[:4])).Should(Equal("RIFF"))
+		Ω(binary.LittleEndian.Uint32(bf[4:8])).Should(Equal(uint32(140)))
+
+		Ω(string(bf[8:12])).Should(Equal("WAVE"))
+		Ω(binary.LittleEndian.Uint32(bf[12:16])).Should(Equal(uint32(132)))
+
+		Ω(string(bf[16:20])).Should(Equal("fmt "))
+		Ω(binary.LittleEndian.Uint32(bf[20:24])).Should(Equal(uint32(16)))
+
+	})
+})

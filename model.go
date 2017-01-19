@@ -151,8 +151,10 @@ type (
 		Speech string `json:"speech"`
 	}
 
-	APIService interface {
+	//QueryAPIEndpoint is used to process natural language in the form of text. The query requests return structured data in JSON format with an action and parameters for that action.
+	QueryAPIEndpoint interface {
 		DoQuery(q Query) (*QueryResponse, error)
+		TextRequest(sessionID string, text string) (*QueryResponse, error)
 	}
 
 	SupportedLang string

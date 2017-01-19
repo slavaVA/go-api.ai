@@ -55,7 +55,7 @@ var _ = Describe("Model", func() {
       "messages": [
         {
           "type": 0,
-          "speech": "Message speesh text"
+          "speech": "Message speech text"
         }
       ]
     },
@@ -80,6 +80,6 @@ var _ = Describe("Model", func() {
 
 		Ω(response.Result.Fulfillment.Messages).Should(HaveLen(1))
 
-		Ω(response.Result.Fulfillment.Messages[0].Speech).Should(Equal("Message speesh text"))
+		Ω(response.Result.Fulfillment.Messages[0].Speech).Should(Equal("Message speech text"))
 	})
 })

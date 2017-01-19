@@ -27,6 +27,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+	"io"
 	"net/http"
 	"os"
 )
@@ -44,7 +45,7 @@ var _ = Describe("Service", func() {
 	})
 	Describe("Text Query", func() {
 		testToken := "123456789"
-		var apiService *HttpApiService
+		var apiService *QueryService
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -77,7 +78,7 @@ var _ = Describe("Service", func() {
 						      "messages": [
 							{
 							  "type": 0,
-							  "speech": "Message speesh text"
+							  "speech": "Message speech text"
 							}
 						      ]
 						    },
@@ -91,7 +92,11 @@ var _ = Describe("Service", func() {
 						}`),
 				),
 			)
-			apiService = NewAPIService(server.URL()+"/v1/", testToken, CurrentAPIVersion, English)
+			apiConfig := &ApiConfig{
+				AccessToken: testToken,
+				Lang:        English,
+			}
+			apiService = NewQueryAPIEndpoint(server.URL()+"/v1/", CurrentAPIVersion, apiConfig)
 			apiService.EnableLogger(os.Stdout)
 		})
 
@@ -104,6 +109,47 @@ var _ = Describe("Service", func() {
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 			Ω(response.SessionID).Should(Equal(sessionId))
 			Ω(response.Status.Code).Should(Equal(200))
+		})
+	})
+
+	Describe("TTS", func() {
+		testToken := "123456789"
+		var apiService *TtsService
+		speech := make([]byte, 100)
+		BeforeEach(func() {
+			for i, _ := range speech {
+				speech[i] = byte(i)
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/v1/tts", "text=Hello&v=20150910"),
+					ghttp.VerifyHeader(http.Header{
+						"Authorization": []string{"Bearer " + testToken},
+					}),
+					ghttp.RespondWith(http.StatusOK, speech),
+				),
+			)
+			apiConfig := &ApiConfig{
+				AccessToken: testToken,
+				Lang:        English,
+			}
+			apiService = NewTtsAPIEndpoint(server.URL()+"/v1/", CurrentAPIVersion, apiConfig)
+			apiService.EnableLogger(os.Stdout)
+		})
+
+		It("Should do simple TTS Request", func() {
+			var speechBuf []byte
+			sh := func(r io.Reader, l int64) {
+				Ω(l).Should(Equal(int64(100)))
+				speechBuf = make([]byte, l)
+				n, err := r.Read(speechBuf)
+				Ω(err).Should(Equal(io.EOF))
+				Ω(n).Should(Equal(100))
+				Ω(speechBuf).Should(Equal(speech))
+			}
+			err := apiService.DoTts("Hello", sh)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
 })
