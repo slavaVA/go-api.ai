@@ -23,6 +23,7 @@ package gapiai
 
 import (
 	"encoding/json"
+	"io"
 	"time"
 )
 
@@ -151,13 +152,20 @@ type (
 		Speech string `json:"speech"`
 	}
 
+	SupportedLang string
+
 	//QueryAPIEndpoint is used to process natural language in the form of text. The query requests return structured data in JSON format with an action and parameters for that action.
 	QueryAPIEndpoint interface {
 		DoQuery(q Query) (*QueryResponse, error)
 		TextRequest(sessionID string, text string) (*QueryResponse, error)
 	}
 
-	SupportedLang string
+	SpeechHandler func(io.Reader)error
+
+	//TtsAPIEndpoint is used to perform text-to-speech – generate speech (audio file) from text.
+	TtsAPIEndpoint interface {
+		DoTts(text string, handler SpeechHandler) error
+	}
 )
 
 const (
@@ -165,7 +173,9 @@ const (
 	CurrentAPIVersion = "20150910"
 
 	English          SupportedLang = "en"
+	EnglishUS        SupportedLang = "en-US"
 	Russian          SupportedLang = "ru"
+	RussianRU        SupportedLang = "ru-RU"
 	German           SupportedLang = "de"
 	Portuguese       SupportedLang = "pt"
 	PortugueseBrazil SupportedLang = "pt-BR"
@@ -179,6 +189,24 @@ const (
 	ChineseTaiwan    SupportedLang = "zh-TW"
 )
 
+var SupportedLanguages = []SupportedLang{
+	English,
+	EnglishUS,
+	Russian,
+	RussianRU,
+	German,
+	Portuguese,
+	PortugueseBrazil,
+	Spanish,
+	French,
+	Italian,
+	Japanese,
+	Korean,
+	ChineseChina,
+	ChineseHongKong,
+	ChineseTaiwan,
+}
+
 func (status *StatusObject) IsSuccess() bool {
 	return status.Code < 400
 }
@@ -186,4 +214,13 @@ func (status *StatusObject) IsSuccess() bool {
 func (response *QueryResponse) Decode(data []byte) (err error) {
 	err = json.Unmarshal(data, response)
 	return
+}
+
+func IsLanguageSupport(lang string) (bool, SupportedLang) {
+	for _, l := range SupportedLanguages {
+		if l == SupportedLang(lang) {
+			return true, l
+		}
+	}
+	return false, ""
 }

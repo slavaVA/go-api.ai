@@ -24,6 +24,7 @@ package gapiai
 import (
 	"io"
 	"log"
+	"math/rand"
 )
 
 type (
@@ -38,6 +39,8 @@ type (
 	}
 )
 
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
 func (service *ApiService) EnableLogger(w io.Writer) {
 	service.logger = log.New(w,
 		"DEBUG: ",
@@ -48,4 +51,13 @@ func (service *ApiService) debug(v ...interface{}) {
 	if service.logger != nil {
 		service.logger.Println(v)
 	}
+}
+
+func NewSessionId() string {
+	n:=36
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

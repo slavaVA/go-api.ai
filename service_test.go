@@ -125,6 +125,7 @@ var _ = Describe("Service", func() {
 					ghttp.VerifyRequest("GET", "/v1/tts", "text=Hello&v=20150910"),
 					ghttp.VerifyHeader(http.Header{
 						"Authorization": []string{"Bearer " + testToken},
+						"Accept-language": []string{"en"},
 					}),
 					ghttp.RespondWith(http.StatusOK, speech),
 				),
@@ -139,13 +140,13 @@ var _ = Describe("Service", func() {
 
 		It("Should do simple TTS Request", func() {
 			var speechBuf []byte
-			sh := func(r io.Reader, l int64) {
-				Ω(l).Should(Equal(int64(100)))
-				speechBuf = make([]byte, l)
+			sh := func(r io.Reader)error {
+				speechBuf = make([]byte, 100)
 				n, err := r.Read(speechBuf)
 				Ω(err).Should(Equal(io.EOF))
 				Ω(n).Should(Equal(100))
 				Ω(speechBuf).Should(Equal(speech))
+				return nil
 			}
 			err := apiService.DoTts("Hello", sh)
 			Ω(err).ShouldNot(HaveOccurred())

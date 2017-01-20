@@ -24,8 +24,9 @@ package gapiai
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
+	"io"
+	"os"
 )
 
 type (
@@ -33,8 +34,6 @@ type (
 		ApiService
 		url string
 	}
-
-	SpeechHandler func(io.Reader, int64)
 )
 
 func NewTtsAPIEndpoint(url string, version string, cfg *ApiConfig) *TtsService {
@@ -76,14 +75,20 @@ func (service *TtsService) DoTts(text string, handler SpeechHandler) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.ContentLength <= 0 {
-		return errors.New("Content length is 0")
-	}
-
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("Http Status " + resp.Status)
 	}
+	return handler(resp.Body)
+}
 
-	handler(resp.Body, resp.ContentLength)
-	return nil
+func NewSpeechToWaveFileHandler(wavFilePath string) (SpeechHandler, error) {
+	wf, err := os.Create(wavFilePath)
+	if err != nil {
+		return nil, err
+	}
+	return func(r io.Reader) error{
+		defer wf.Close()
+		_,err:=io.Copy(wf, r)
+		return err
+	}, nil
 }
